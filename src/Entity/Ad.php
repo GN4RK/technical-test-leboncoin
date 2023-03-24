@@ -6,6 +6,7 @@ use App\Repository\AdRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AdRepository::class)]
 class Ad
@@ -13,15 +14,19 @@ class Ad
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getList"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getList"])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getList"])]
     private ?string $content = null;
 
     #[ORM\OneToMany(mappedBy: 'Ad', targetEntity: AdAuto::class)]
+    #[Groups(["getList"])]
     private Collection $adAutos;
 
     public function __construct()

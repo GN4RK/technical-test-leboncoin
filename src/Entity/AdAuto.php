@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AdAutoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AdAutoRepository::class)]
 class AdAuto
@@ -18,9 +19,11 @@ class AdAuto
     private ?Ad $Ad = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getList"])]
     private ?string $brand = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getList"])]
     private ?string $model = null;
 
     public function getId(): ?int
