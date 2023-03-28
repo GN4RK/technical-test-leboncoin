@@ -39,6 +39,21 @@ class AdRepository extends ServiceEntityRepository
         }
     }
 
+    public function findAllAdAuto(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT * FROM ad WHERE id IN
+                (SELECT ad_id FROM ad_auto)
+            ';
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery();
+
+        // returns an array of arrays (i.e. a raw data set)
+        return $resultSet->fetchAllAssociative();
+    }
+
 //    /**
 //     * @return Ad[] Returns an array of Ad objects
 //     */

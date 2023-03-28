@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Ad;
 use App\Entity\AdAuto;
-use App\Repository\AdAutoRepository;
 use App\Repository\AdRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,9 +17,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 class AdAutoController extends AbstractController
 {
     #[Route('api/autos', name: 'ad_auto_list', methods: ['GET'])]
-    public function getAdAutoList(AdRepository $adAutoRepository, SerializerInterface $serializer): JsonResponse
+    public function getAdAutoList(AdRepository $adRepository, SerializerInterface $serializer): JsonResponse
     {
-        $adAutoList = $adAutoRepository->findAll();
+        $adAutoList = $adRepository->findAllAdAuto();
         $jsonAdAutoList = $serializer->serialize($adAutoList, 'json', ['groups' => 'getList']);
 
         return new JsonResponse($jsonAdAutoList, Response::HTTP_OK, [], true);
@@ -53,12 +52,12 @@ class AdAutoController extends AbstractController
         return new JsonResponse($json, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
-    #[Route('api/autos', name: 'update_ad_auto', methods: ['PUT'])]
-    public function updateAdAuto(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
+    #[Route('api/autos/{id}', name: 'update_ad_auto', methods: ['PUT'])]
+    public function updateAdAuto(int $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
     {
         $content = $request->toArray();
 
-        $ad = $adRepository->find($content["id"]);
+        $ad = $adRepository->find($id);
 
         $ad->setTitle($content['title']);
         $ad->setContent($content['content']);
@@ -74,5 +73,16 @@ class AdAutoController extends AbstractController
         $json = $serializer->serialize($ad, 'json', ['groups' => 'getDetails']);
 
         return new JsonResponse($json, Response::HTTP_OK, ['accept' => 'json'], true);
+    }
+
+    #[Route('api/autos/{id}', name: 'delete_ad_auto', methods: ['DELETE'])]
+    public function deleteAdAuto(int $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
+    {
+        $ad = $adRepository->find($id);
+
+        $em->remove($ad);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }
