@@ -27,11 +27,11 @@ class AdAutoController extends AbstractController
     }
 
     #[Route('api/autos/{id}', name: 'ad_auto_details', methods: ['GET'])]
-    public function getAdAutoDetails(AdAuto $adAuto, SerializerInterface $serializer): JsonResponse
+    public function getAdAutoDetails(Ad $ad, SerializerInterface $serializer): JsonResponse
     {
-        $jsonAdAuto = $serializer->serialize($adAuto, 'json', ['groups' => 'getDetails']);
+        $jsonAd = $serializer->serialize($ad, 'json', ['groups' => 'getDetails']);
 
-        return new JsonResponse($jsonAdAuto, Response::HTTP_OK, ['accept' => 'json'], true);
+        return new JsonResponse($jsonAd, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
     #[Route('api/autos', name: 'add_ad_auto', methods: ['POST'])]
@@ -48,29 +48,30 @@ class AdAutoController extends AbstractController
         $em->persist($adAuto);
         $em->flush();
 
-        $json = $serializer->serialize($adAuto, 'json', ['groups' => 'getDetails']);
+        $json = $serializer->serialize($ad, 'json', ['groups' => 'getDetails']);
 
         return new JsonResponse($json, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
     #[Route('api/autos', name: 'update_ad_auto', methods: ['PUT'])]
-    public function updateAdAuto(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdAutoRepository $adAutoRepository): JsonResponse
+    public function updateAdAuto(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
     {
         $content = $request->toArray();
 
-        $adAuto = $adAutoRepository->find($content["id"]);
+        $ad = $adRepository->find($content["id"]);
 
-        $updatedAdAuto = $serializer->deserialize($request->getContent(), AdAuto::class, 'json');
-        $ad = new Ad();
         $ad->setTitle($content['title']);
         $ad->setContent($content['content']);
-        $adAuto->setAd($ad);
+
+        $adAuto = $ad->getAdAuto();
+        $adAuto->setBrand($content['brand']);
+        $adAuto->setModel($content['model']);
 
         $em->persist($ad);
         $em->persist($adAuto);
         $em->flush();
 
-        $json = $serializer->serialize($adAuto, 'json', ['groups' => 'getDetails']);
+        $json = $serializer->serialize($ad, 'json', ['groups' => 'getDetails']);
 
         return new JsonResponse($json, Response::HTTP_OK, ['accept' => 'json'], true);
     }

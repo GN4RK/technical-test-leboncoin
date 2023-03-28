@@ -14,6 +14,7 @@ class Ad
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getList", "getDetails"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -24,14 +25,9 @@ class Ad
     #[Groups(["getList", "getDetails"])]
     private ?string $content = null;
 
-    #[ORM\OneToMany(mappedBy: 'Ad', targetEntity: AdAuto::class)]
-    #[Groups(["getList"])]
-    private Collection $adAutos;
-
-    public function __construct()
-    {
-        $this->adAutos = new ArrayCollection();
-    }
+    #[ORM\OneToOne(mappedBy: 'ad', cascade: ['persist', 'remove'])]
+    #[Groups(["getList", "getDetails"])]
+    private ?AdAuto $adAuto = null;
 
     public function getId(): ?int
     {
@@ -62,33 +58,21 @@ class Ad
         return $this;
     }
 
-    /**
-     * @return Collection<int, AdAuto>
-     */
-    public function getAdAutos(): Collection
+    public function getAdAuto(): ?AdAuto
     {
-        return $this->adAutos;
+        return $this->adAuto;
     }
 
-    public function addAdAuto(AdAuto $adAuto): self
+    public function setAdAuto(AdAuto $adAuto): self
     {
-        if (!$this->adAutos->contains($adAuto)) {
-            $this->adAutos->add($adAuto);
+        // set the owning side of the relation if necessary
+        if ($adAuto->getAd() !== $this) {
             $adAuto->setAd($this);
         }
 
-        return $this;
-    }
-
-    public function removeAdAuto(AdAuto $adAuto): self
-    {
-        if ($this->adAutos->removeElement($adAuto)) {
-            // set the owning side to null (unless already changed)
-            if ($adAuto->getAd() === $this) {
-                $adAuto->setAd(null);
-            }
-        }
+        $this->adAuto = $adAuto;
 
         return $this;
     }
+
 }

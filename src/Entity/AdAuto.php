@@ -12,13 +12,7 @@ class AdAuto
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getList", "getDetails"])]
     private ?int $id = null;
-
-    #[ORM\ManyToOne(inversedBy: 'adAutos')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["getDetails"])]
-    private ?Ad $Ad = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["getList", "getDetails"])]
@@ -28,21 +22,13 @@ class AdAuto
     #[Groups(["getList", "getDetails"])]
     private ?string $model = null;
 
+    #[ORM\OneToOne(inversedBy: 'adAuto', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Ad $ad = null;
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getAd(): ?Ad
-    {
-        return $this->Ad;
-    }
-
-    public function setAd(?Ad $Ad): self
-    {
-        $this->Ad = $Ad;
-
-        return $this;
     }
 
     public function getBrand(): ?string
@@ -65,6 +51,18 @@ class AdAuto
     public function setModel(string $model): self
     {
         $this->model = $model;
+
+        return $this;
+    }
+
+    public function getAd(): ?Ad
+    {
+        return $this->ad;
+    }
+
+    public function setAd(Ad $ad): self
+    {
+        $this->ad = $ad;
 
         return $this;
     }
