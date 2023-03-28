@@ -5,12 +5,14 @@ namespace App\Controller;
 use App\Entity\Ad;
 use App\Entity\AdAuto;
 use App\Repository\AdRepository;
+use App\Service\CarModelDetector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface; 
 
 
@@ -34,10 +36,21 @@ class AdAutoController extends AbstractController
     }
 
     #[Route('api/autos', name: 'add_ad_auto', methods: ['POST'])]
-    public function addAdAuto(Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    public function addAdAuto(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, CarModelDetector $carModelDetector): JsonResponse
     {
-        $adAuto = $serializer->deserialize($request->getContent(), AdAuto::class, 'json');
+        $adAuto = new AdAuto();
         $content = $request->toArray();
+
+        $modelSent = $content["model"];
+        $detection = $carModelDetector->detectCarModel($modelSent);
+
+        if (empty($detection)) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, "Model '$modelSent' does not match.");
+        }
+        
+        $adAuto->setBrand($detection['brand']);
+        $adAuto->setModel($detection['model']);
+
         $ad = new Ad();
         $ad->setTitle($content['title']);
         $ad->setContent($content['content']);
@@ -47,7 +60,17 @@ class AdAutoController extends AbstractController
         $em->persist($adAuto);
         $em->flush();
 
-        $json = $serializer->serialize($ad, 'json', ['groups' => 'getDetails']);
+        $result = [
+            "id" => $ad->getId(),
+            "title" => $ad->getTitle(),
+            "content" => $ad->getContent(),
+            "adAuto" => [
+                "brand" => $adAuto->getBrand(),
+                "model" => $adAuto->getModel(),
+            ]
+        ];
+
+        $json = $serializer->serialize($result, 'json', ['groups' => 'getDetails']);
 
         return new JsonResponse($json, Response::HTTP_OK, ['accept' => 'json'], true);
     }
@@ -56,13 +79,21 @@ class AdAutoController extends AbstractController
     public function updateAdAuto(int $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
     {
         $content = $request->toArray();
-
+        
         $ad = $adRepository->find($id);
+        // check if ad is not empty
+        if (empty($ad)) {
+            throw new HttpException(Response::HTTP_NOT_FOUND, "Ad $id not found.");
+        }
+
+        $adAuto = $ad->getAdAuto();
+        // check if ad is type AdAuto
+        if (empty($adAuto)) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, "Ad is not type AdAuto.");
+        }
 
         $ad->setTitle($content['title']);
         $ad->setContent($content['content']);
-
-        $adAuto = $ad->getAdAuto();
         $adAuto->setBrand($content['brand']);
         $adAuto->setModel($content['model']);
 
