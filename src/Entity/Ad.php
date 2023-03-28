@@ -14,15 +14,14 @@ class Ad
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getList"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getList"])]
+    #[Groups(["getList", "getDetails"])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getList"])]
+    #[Groups(["getList", "getDetails"])]
     private ?string $content = null;
 
     #[ORM\OneToMany(mappedBy: 'Ad', targetEntity: AdAuto::class)]

@@ -12,18 +12,20 @@ class AdAuto
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getList", "getDetails"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'adAutos')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["getDetails"])]
     private ?Ad $Ad = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getList"])]
+    #[Groups(["getList", "getDetails"])]
     private ?string $brand = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getList"])]
+    #[Groups(["getList", "getDetails"])]
     private ?string $model = null;
 
     public function getId(): ?int
