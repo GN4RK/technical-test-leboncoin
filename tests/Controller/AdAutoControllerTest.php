@@ -2,9 +2,9 @@
 namespace App\Tests\Controller;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use PHPUnit\Framework\TestCase;
 
-class AdAutoControllerTest extends WebTestCase
+class AdAutoControllerTest extends TestCase
 {
     public function testCreateAdAuto(): void
     {
