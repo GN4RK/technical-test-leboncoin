@@ -130,6 +130,10 @@ class AdAutoController extends AbstractController
     public function deleteAdAuto(int $id, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
     {
         $ad = $adRepository->find($id);
+        // check if ad is not empty
+        if (empty($ad)) {
+            throw new HttpException(Response::HTTP_NOT_FOUND, "Ad $id not found.");
+        }
         $em->remove($ad);
         $em->flush();
 
