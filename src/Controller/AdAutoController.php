@@ -21,9 +21,12 @@ class AdAutoController extends AbstractController
     #[Route('api/autos', name: 'ad_auto_list', methods: ['GET'])]
     public function getAdAutoList(AdRepository $adRepository, SerializerInterface $serializer): JsonResponse
     {
+        $result = array();
         $adAutoList = $adRepository->findAllAdAuto();
-        $jsonAdAutoList = $serializer->serialize($adAutoList, 'json', ['groups' => 'getList']);
-
+        foreach ($adAutoList as $adAuto) {
+            $result[] = $adRepository->find($adAuto['id']);
+        }
+        $jsonAdAutoList = $serializer->serialize($result, 'json', ['groups' => 'getList']);
         return new JsonResponse($jsonAdAutoList, Response::HTTP_OK, [], true);
     }
 
@@ -41,6 +44,17 @@ class AdAutoController extends AbstractController
         $adAuto = new AdAuto();
         $content = $request->toArray();
 
+        // checking request
+        if (empty($content["model"])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, "Model is missing.");
+        }
+        if (empty($content["content"])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, "Content is missing.");
+        }
+        if (empty($content["title"])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, "Title is missing.");
+        }
+
         $modelSent = $content["model"];
         $detection = $carModelDetector->detectCarModel($modelSent);
 
@@ -50,12 +64,10 @@ class AdAutoController extends AbstractController
         
         $adAuto->setBrand($detection['brand']);
         $adAuto->setModel($detection['model']);
-
         $ad = new Ad();
         $ad->setTitle($content['title']);
         $ad->setContent($content['content']);
         $adAuto->setAd($ad);
-
         $em->persist($ad);
         $em->persist($adAuto);
         $em->flush();
@@ -76,10 +88,9 @@ class AdAutoController extends AbstractController
     }
 
     #[Route('api/autos/{id}', name: 'update_ad_auto', methods: ['PUT'])]
-    public function updateAdAuto(int $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
+    public function updateAdAuto(int $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository, CarModelDetector $carModelDetector): JsonResponse
     {
         $content = $request->toArray();
-        
         $ad = $adRepository->find($id);
         // check if ad is not empty
         if (empty($ad)) {
@@ -92,10 +103,19 @@ class AdAutoController extends AbstractController
             throw new HttpException(Response::HTTP_FORBIDDEN, "Ad is not type AdAuto.");
         }
 
-        $ad->setTitle($content['title']);
-        $ad->setContent($content['content']);
-        $adAuto->setBrand($content['brand']);
-        $adAuto->setModel($content['model']);
+        if (!empty($content['title'])) $ad->setTitle($content['title']);
+        if (!empty($content['content'])) $ad->setContent($content['content']);
+
+        if (!empty($content['model'])) {
+            $modelSent = $content["model"];
+            $detection = $carModelDetector->detectCarModel($modelSent);
+
+            if (empty($detection)) {
+                throw new HttpException(Response::HTTP_BAD_REQUEST, "Model '$modelSent' does not match.");
+            }
+            $adAuto->setBrand($detection['brand']);
+            $adAuto->setModel($detection['model']);
+        }
 
         $em->persist($ad);
         $em->persist($adAuto);
@@ -107,10 +127,13 @@ class AdAutoController extends AbstractController
     }
 
     #[Route('api/autos/{id}', name: 'delete_ad_auto', methods: ['DELETE'])]
-    public function deleteAdAuto(int $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
+    public function deleteAdAuto(int $id, EntityManagerInterface $em, AdRepository $adRepository): JsonResponse
     {
         $ad = $adRepository->find($id);
-
+        // check if ad is not empty
+        if (empty($ad)) {
+            throw new HttpException(Response::HTTP_NOT_FOUND, "Ad $id not found.");
+        }
         $em->remove($ad);
         $em->flush();
 
