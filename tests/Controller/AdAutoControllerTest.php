@@ -6,6 +6,13 @@ use PHPUnit\Framework\TestCase;
 
 class AdAutoControllerTest extends TestCase
 {
+    private $baseUrl;
+    protected function setUp(): void
+    {
+        $this->baseUrl = "http://localhost:8742/api";
+    }
+
+
     public function testCreateAdAuto(): void
     {
         $client = new Client(['verify' => false]);
@@ -16,7 +23,7 @@ class AdAutoControllerTest extends TestCase
             'model' => 'ds4'
         ];
 
-        $response = $client->post("https://localhost:8000/api/autos", [
+        $response = $client->post("$this->baseUrl/autos", [
             RequestOptions::JSON => $data
         ]);
         
@@ -27,7 +34,7 @@ class AdAutoControllerTest extends TestCase
     public function testGetAdAutoList(): void
     {
         $client = new Client(['verify' => false]);
-        $response = $client->request('GET', 'https://localhost:8000/api/autos');
+        $response = $client->request('GET', "$this->baseUrl/autos");
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals("application/json", $response->getHeader('content-type')[0]);
         
@@ -36,7 +43,7 @@ class AdAutoControllerTest extends TestCase
     public function testGetAdAutoDetails(): void
     {
         $client = new Client(['verify' => false]);
-        $response = $client->request('GET', 'https://localhost:8000/api/autos/1');
+        $response = $client->request('GET', "$this->baseUrl/autos/1");
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals("application/json", $response->getHeader('content-type')[0]);
         
@@ -52,7 +59,7 @@ class AdAutoControllerTest extends TestCase
             'model' => 'ds4'
         ];
 
-        $response = $client->put("https://localhost:8000/api/autos/1", [
+        $response = $client->put("$this->baseUrl/autos/1", [
             RequestOptions::JSON => $data
         ]);
         
@@ -71,7 +78,7 @@ class AdAutoControllerTest extends TestCase
         ];
 
         // creating new ad
-        $response = $client->post("https://localhost:8000/api/autos", [
+        $response = $client->post("$this->baseUrl/autos", [
             RequestOptions::JSON => $data
         ]);
 
@@ -79,7 +86,7 @@ class AdAutoControllerTest extends TestCase
         $idNewAd = json_decode((string)$response->getBody())->id;
 
         // deleting the ad created
-        $response = $client->delete("https://localhost:8000/api/autos/$idNewAd");
+        $response = $client->delete("$this->baseUrl/autos/$idNewAd");
         
         $this->assertEquals(204, $response->getStatusCode());
     }
