@@ -62,6 +62,79 @@ Une attention particulière sera apportée sur l’algorithme qui sera implémen
 | PUT | /autos/{id} | update an ad auto |
 | DELETE | /autos/{id} | delete an ad auto |
 
+# Examples requests
+## POST Create Ad Auto
+```
+http://localhost:8742/api/autos
+```
+Body :
+```
+{
+    "title": "vends voiture",
+    "content": "Bonjour, Je vends mon auto",
+    "model": "m535"
+}
+```
+curl :
+```
+curl --location 'http://localhost:8742/api/autos' \
+--data '{
+    "title": "vends voiture",
+    "content": "Bonjour, Je vends mon auto",
+    "model": "m535"
+}'
+```
+
+## GET Read Ad Auto List
+```
+http://localhost:8742/api/autos
+```
+curl :
+```
+curl --location 'http://localhost:8742/api/autos'
+```
+
+
+## GET Read Ad Auto Details
+```
+http://localhost:8742/api/autos/1
+```
+curl :
+```
+curl --location 'http://localhost:8742/api/autos/1'
+```
+
+## PUT Update Ad Auto
+```
+http://localhost:8742/api/autos/5
+```
+Body :
+```
+{
+    "title": "vends voiture",
+    "content": "Salut, Je vends ma voiture",
+    "model": "cabriolet"
+}
+```
+curl :
+```
+curl --location --request PUT 'http://localhost:8742/api/autos/5' \
+--data '{
+    "title": "vends voiture",
+    "content": "Salut, Je vends ma voiture",
+    "model": "cabriolet"
+}'
+```
+
+## DELETE Ad Auto
+```
+http://localhost:8742/api/autos/7
+```
+curl :
+```
+curl --location --request DELETE 'http://localhost:8742/api/autos/7' \
+--data ''
+```
 
 # Installation
 
