@@ -161,6 +161,11 @@ docker-compose up -d
 ```
 
 ### Database config
+Change Database connection in .env file :
+```
+DATABASE_URL="mysql://root:@db_docker_symfony_api:3306/leboncoin?serverVersion=5.7"
+```
+Database Creation
 ```
 docker exec -it www_docker_symfony_api bash
 php bin/console doctrine:database:create
